@@ -32,15 +32,11 @@ async function searchSongs(query) {
 }
 
 // Function to display song results
-let currentAudio = null; // Keep track of the currently playing audio
-let songList = []; // Store the list of songs
-
 function displaySongs(songs) {
     const resultsContainer = document.getElementById('song-results');
     resultsContainer.innerHTML = '';
-    songList = songs; // Save the songs globally
 
-    songs.forEach((song, index) => {
+    songs.forEach(song => {
         const songElement = document.createElement('div');
         songElement.className = 'song';
         songElement.innerHTML = `
@@ -48,7 +44,7 @@ function displaySongs(songs) {
             <div>
                 <h3>${song.name}</h3>
                 <p>${song.artists[0].name}</p>
-                <audio id="audio-${index}" controls>
+                <audio controls>
                     <source src="${song.preview_url}" type="audio/mpeg">
                     Your browser does not support the audio element.
                 </audio>
@@ -56,31 +52,6 @@ function displaySongs(songs) {
         `;
         resultsContainer.appendChild(songElement);
     });
-
-    // Automatically start playing the first song if preview URLs are available
-    if (songs.length > 0 && songs[0].preview_url) {
-        playSong(0);
-    }
-}
-
-// Function to play a specific song by index
-function playSong(index) {
-    if (currentAudio) {
-        currentAudio.pause(); // Stop any currently playing audio
-    }
-    currentAudio = document.getElementById(`audio-${index}`);
-    if (currentAudio) {
-        currentAudio.play();
-        currentAudio.addEventListener('ended', playNextSong); // Automatically play the next song
-    }
-}
-
-// Function to play the next song randomly
-function playNextSong() {
-    if (songList.length > 1) {
-        const randomIndex = Math.floor(Math.random() * songList.length);
-        playSong(randomIndex);
-    }
 }
 
 // Event listener for the search button
