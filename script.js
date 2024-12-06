@@ -28,36 +28,44 @@ async function searchSongs(query) {
         }
     });
     const data = await response.json();
-    return data.tracks.items;
+    displaySongs(data.tracks.items);
 }
 
-// Function to display song results
-function displaySongs(songs) {
-    const resultsContainer = document.getElementById('song-results');
-    resultsContainer.innerHTML = '';
-    songs.forEach(song => {
-        const songElement = document.createElement('div');
-        songElement.className = 'song';
-        songElement.innerHTML = `
-            <img src="${song.album.images[0].url}" alt="${song.name}">
-            <div>
-                <h3>${song.name}</h3>
-                <p>${song.artists[0].name}</p>
-                <audio controls>
-                    <source src="${song.preview_url}" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                </audio>
-            </div>
-        `;
-        resultsContainer.appendChild(songElement);
+// Function to display songs in a list
+function displaySongs(tracks) {
+    const songList = document.getElementById('song-list');
+    songList.innerHTML = ''; // Clear previous results
+
+    tracks.forEach(track => {
+        const listItem = document.createElement('li');
+        listItem.textContent = `${track.name} by ${track.artists.map(artist => artist.name).join(', ')}`;
+
+        const playButton = document.createElement('button');
+        playButton.textContent = 'Play';
+        playButton.addEventListener('click', () => {
+            playTrack(track.preview_url);
+        });
+
+        listItem.appendChild(playButton);
+        songList.appendChild(listItem);
     });
 }
 
-// Event listener for search button
-document.getElementById('search-button').addEventListener('click', async () => {
-    const query = document.getElementById('search-input').value;
-    if (query) {
-        const songs = await searchSongs(query);
-        displaySongs(songs);
+// Function to play a track using HTML5 audio
+function playTrack(previewUrl) {
+    if (!previewUrl) {
+        alert('Preview not available for this track.');
+        return;
     }
+
+    const audioPlayer = document.getElementById('audio-player');
+    audioPlayer.src = previewUrl;
+    audioPlayer.play();
+}
+
+// Add event listener to search form
+document.getElementById('search-form').addEventListener('submit', (event) => {
+    event.preventDefault();
+    const query = document.getElementById('search-input').value;
+    searchSongs(query);
 });
