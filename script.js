@@ -32,13 +32,13 @@ async function searchSongs(query) {
 }
 
 // Function to display song results
-let currentSongIndex = -1; // To track the current song being played
-let songList = []; // Stores the list of songs from the search results
+let currentAudio = null; // Keep track of the currently playing audio
+let songList = []; // Store the list of songs
 
 function displaySongs(songs) {
     const resultsContainer = document.getElementById('song-results');
     resultsContainer.innerHTML = '';
-    songList = songs; // Save the songs to the global list
+    songList = songs; // Save the songs globally
 
     songs.forEach((song, index) => {
         const songElement = document.createElement('div');
@@ -48,40 +48,38 @@ function displaySongs(songs) {
             <div>
                 <h3>${song.name}</h3>
                 <p>${song.artists[0].name}</p>
+                <audio id="audio-${index}" controls>
+                    <source src="${song.preview_url}" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                </audio>
             </div>
         `;
         resultsContainer.appendChild(songElement);
     });
 
-    // Start auto-playing the first song
-    if (songList.length > 0) {
-        currentSongIndex = 0;
-        playSong(songList[currentSongIndex]);
+    // Automatically start playing the first song if preview URLs are available
+    if (songs.length > 0 && songs[0].preview_url) {
+        playSong(0);
     }
 }
 
-// Function to play a song
-function playSong(song) {
-    const audio = new Audio(song.preview_url);
-    audio.play();
-
-    // Handle when the song ends
-    audio.addEventListener('ended', () => {
-        playNextSong(); // Play the next random song when the current song ends
-    });
+// Function to play a specific song by index
+function playSong(index) {
+    if (currentAudio) {
+        currentAudio.pause(); // Stop any currently playing audio
+    }
+    currentAudio = document.getElementById(`audio-${index}`);
+    if (currentAudio) {
+        currentAudio.play();
+        currentAudio.addEventListener('ended', playNextSong); // Automatically play the next song
+    }
 }
 
-// Function to play the next random song
+// Function to play the next song randomly
 function playNextSong() {
-    if (songList.length > 0) {
-        // Select a random index different from the current one
-        let randomIndex;
-        do {
-            randomIndex = Math.floor(Math.random() * songList.length);
-        } while (randomIndex === currentSongIndex);
-
-        currentSongIndex = randomIndex;
-        playSong(songList[currentSongIndex]);
+    if (songList.length > 1) {
+        const randomIndex = Math.floor(Math.random() * songList.length);
+        playSong(randomIndex);
     }
 }
 
