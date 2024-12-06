@@ -32,10 +32,15 @@ async function searchSongs(query) {
 }
 
 // Function to display song results
+let currentSongIndex = -1; // To track the current song being played
+let songList = []; // Stores the list of songs from the search results
+
 function displaySongs(songs) {
     const resultsContainer = document.getElementById('song-results');
     resultsContainer.innerHTML = '';
-    songs.forEach(song => {
+    songList = songs; // Save the songs to the global list
+
+    songs.forEach((song, index) => {
         const songElement = document.createElement('div');
         songElement.className = 'song';
         songElement.innerHTML = `
@@ -43,70 +48,44 @@ function displaySongs(songs) {
             <div>
                 <h3>${song.name}</h3>
                 <p>${song.artists[0].name}</p>
-                <audio controls>
-                    <source src="${song.preview_url}" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                </audio>
-                <button class="add-to-playlist" data-preview-url="${song.preview_url}" data-song-name="${song.name}" data-artist-name="${song.artists[0].name}">
-                    Add to Playlist
-                </button>
             </div>
         `;
         resultsContainer.appendChild(songElement);
     });
 
-    // Attach event listeners to "Add to Playlist" buttons
-    document.querySelectorAll('.add-to-playlist').forEach(button => {
-        button.addEventListener('click', () => {
-            const song = {
-                previewUrl: button.dataset.previewUrl,
-                name: button.dataset.songName,
-                artist: button.dataset.artistName,
-            };
-            addToPlaylist(song);
-        });
-    });
-}
-
-// Playlist array to hold selected songs
-const playlist = [];
-
-// Function to add songs to the playlist
-function addToPlaylist(song) {
-    playlist.push(song);
-    displayPlaylist();
-}
-
-// Function to display playlist
-function displayPlaylist() {
-    const playlistContainer = document.getElementById('playlist');
-    playlistContainer.innerHTML = '';
-    playlist.forEach((song, index) => {
-        const songElement = document.createElement('div');
-        songElement.className = 'playlist-song';
-        songElement.innerHTML = `
-            <p>${index + 1}. ${song.name} - ${song.artist}</p>
-            <audio controls>
-                <source src="${song.previewUrl}" type="audio/mpeg">
-                Your browser does not support the audio element.
-            </audio>
-        `;
-        playlistContainer.appendChild(songElement);
-    });
-}
-
-// Function to play playlist automatically
-async function playPlaylist() {
-    for (let i = 0; i < playlist.length; i++) {
-        const audio = new Audio(playlist[i].previewUrl);
-        await new Promise(resolve => {
-            audio.addEventListener('ended', resolve);
-            audio.play();
-        });
+    // Start auto-playing the first song
+    if (songList.length > 0) {
+        currentSongIndex = 0;
+        playSong(songList[currentSongIndex]);
     }
 }
 
-// Event listener for search button
+// Function to play a song
+function playSong(song) {
+    const audio = new Audio(song.preview_url);
+    audio.play();
+
+    // Handle when the song ends
+    audio.addEventListener('ended', () => {
+        playNextSong(); // Play the next random song when the current song ends
+    });
+}
+
+// Function to play the next random song
+function playNextSong() {
+    if (songList.length > 0) {
+        // Select a random index different from the current one
+        let randomIndex;
+        do {
+            randomIndex = Math.floor(Math.random() * songList.length);
+        } while (randomIndex === currentSongIndex);
+
+        currentSongIndex = randomIndex;
+        playSong(songList[currentSongIndex]);
+    }
+}
+
+// Event listener for the search button
 document.getElementById('search-button').addEventListener('click', async () => {
     const query = document.getElementById('search-input').value;
     if (query) {
@@ -114,6 +93,3 @@ document.getElementById('search-button').addEventListener('click', async () => {
         displaySongs(songs);
     }
 });
-
-// Event listener for "Play Playlist" button
-document.getElementById('play-playlist-button').addEventListener('click', playPlaylist);
