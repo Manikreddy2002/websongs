@@ -1,4 +1,4 @@
-// Spotify API credentials
+// Replace with your Spotify API credentials
 const clientId = '463c92a5ff7c4e81ba6f177ac80c118d';
 const clientSecret = '53734d48028b45989dcd0deefbe960a9';
 
@@ -35,7 +35,6 @@ async function searchSongs(query) {
 function displaySongs(songs) {
     const resultsContainer = document.getElementById('song-results');
     resultsContainer.innerHTML = '';
-
     songs.forEach(song => {
         const songElement = document.createElement('div');
         songElement.className = 'song';
@@ -54,7 +53,7 @@ function displaySongs(songs) {
     });
 }
 
-// Event listener for the search button
+// Event listener for search button
 document.getElementById('search-button').addEventListener('click', async () => {
     const query = document.getElementById('search-input').value;
     if (query) {
